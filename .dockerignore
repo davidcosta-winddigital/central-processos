@@ -1,0 +1,35 @@
+# ---- VCS / IDE
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+*.md
+
+# ---- Backend Laravel
+backend/vendor
+backend/node_modules
+backend/.env
+backend/.env.*
+backend/storage/logs/*
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/bootstrap/cache/*.php
+backend/.phpunit.result.cache
+backend/tests
+
+# ---- Frontend Vite
+frontend/node_modules
+frontend/dist
+frontend/.env
+frontend/.env.*
+
+# ---- Docker / deploy artifacts
+.env
+.env.*
+docker-compose.yml
+docker-compose.override.yml
+**/Dockerfile.local
+deploy.ps1
+*.log

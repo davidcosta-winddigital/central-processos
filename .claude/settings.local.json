@@ -22,7 +22,9 @@
       "Bash(grep -n \"use Illuminate\\\\\\\\\\\\\\\\Support\\\\\\\\\\\\\\\\Facades\\\\\\\\\\\\\\\\DB\" /c/Projetos/central-processos/backend/app/Http/Controllers/Api/CampoPersonalizadoController.php)",
       "Bash(php -l /c/Projetos/central-processos/backend/app/Http/Controllers/Api/ProcessoController.php)",
       "Bash(php -l /c/Projetos/central-processos/backend/app/Services/ValidadorCampos.php)",
-      "Bash(php -l /c/Projetos/central-processos/backend/app/Http/Controllers/Api/CampoPersonalizadoController.php)"
+      "Bash(php -l /c/Projetos/central-processos/backend/app/Http/Controllers/Api/CampoPersonalizadoController.php)",
+      "Bash(openssl rand *)",
+      "Bash(echo \"base64:$\\(openssl rand -base64 32\\)\")"
     ]
   }
 }

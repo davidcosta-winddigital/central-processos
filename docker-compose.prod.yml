@@ -1,0 +1,131 @@
+# ============================================================
+# Docker Compose - Producao (Portainer / Docker Hub)
+# ------------------------------------------------------------
+# Imagem unica: winddigital/central-processos:latest
+#   (frontend estatico + Laravel + nginx + php-fpm + scheduler + queue)
+#
+# Buildada e pushada na maquina dev via .\deploy.ps1.
+# TLS e dominio publico ficam no Nginx Proxy Manager do host,
+# que aponta para http://<host>:${HTTP_PORT}.
+#
+# Deploy via Portainer:
+#   Stacks > Add Stack > cole este conteudo
+#   Environment variables (.env) no proprio Portainer
+#   Pra atualizar: Update the stack > Re-pull image
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # Banco de dados - MySQL 8
+  # ----------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE:-central_processos}
+      - MYSQL_USER=${DB_USERNAME:-central_processos}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  # ----------------------------------------------------------
+  # Cache / Sessao / Queue - Redis 7
+  # ----------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ----------------------------------------------------------
+  # App - imagem unica (nginx + php-fpm + Laravel + SPA + scheduler + queue)
+  # ----------------------------------------------------------
+  app:
+    image: winddigital/central-processos:latest
+    ports:
+      - "${HTTP_PORT:-8014}:80"
+    environment:
+      - APP_NAME=${APP_NAME:-Central de Processos}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${APP_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_URL=${APP_URL}
+      - APP_TIMEZONE=America/Sao_Paulo
+      - APP_LOCALE=pt_BR
+      - APP_FALLBACK_LOCALE=en
+
+      - LOG_CHANNEL=stack
+      - LOG_LEVEL=${LOG_LEVEL:-warning}
+
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-central_processos}
+      - DB_USERNAME=${DB_USERNAME:-central_processos}
+      - DB_PASSWORD=${DB_PASSWORD}
+
+      - REDIS_CLIENT=phpredis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+      - BROADCAST_DRIVER=log
+      - CACHE_DRIVER=redis
+      - FILESYSTEM_DISK=local
+      - QUEUE_CONNECTION=redis
+      - SESSION_DRIVER=redis
+      - SESSION_LIFETIME=120
+
+      - TRUSTED_PROXIES=*
+
+      - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS}
+      - SESSION_DOMAIN=${SESSION_DOMAIN}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+
+      - MAIL_MAILER=${MAIL_MAILER:-log}
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-no-reply@processos.winddigital.com.br}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-Central de Processos}
+
+      - RUN_MIGRATIONS=1
+    volumes:
+      - app_storage:/var/www/html/storage
+    networks:
+      - internal
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+  app_storage:
+
+networks:
+  internal:
+    driver: bridge
