@@ -1,0 +1,161 @@
+# docker-compose.yml — Central de Processos
+# PHP 8.2 + Laravel 10 + MySQL 8 + Redis 7 (opcional) + React 18 (Vite) + MailHog
+#
+# Drivers de cache/queue/session são lidos do backend/.env (file/sync/file por padrão).
+# Para ligar Redis: instalar predis/predis no composer + adicionar store 'redis' em
+# config/cache.php, então mudar CACHE_DRIVER/QUEUE_CONNECTION/SESSION_DRIVER no .env e
+# descomentar os serviços queue/scheduler abaixo.
+
+services:
+  # ──────────────────────────── BANCO DE DADOS ────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: cp_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-central_processos}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - cp_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ────────────────────────────── REDIS (disponivel, opcional) ─────────────
+  redis:
+    image: redis:7-alpine
+    container_name: cp_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cp_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ────────────────────────────── MAILHOG ─────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: cp_mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAIL_SMTP_PORT:-1025}:1025"   # SMTP
+      - "${MAIL_UI_PORT:-8025}:8025"     # UI web
+    networks:
+      - cp_network
+
+  # ───────────────────────────── BACKEND ──────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cp_backend
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    # Apenas variaveis de infra (host do banco e do redis). Drivers continuam vindo do .env.
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-central_processos}
+      DB_USERNAME: ${DB_USERNAME:-laravel}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    networks:
+      - cp_network
+    command: >
+      sh -c "php artisan config:clear 2>/dev/null || true &&
+             php artisan cache:clear 2>/dev/null || true &&
+             php artisan storage:link --force 2>/dev/null || true &&
+             php artisan serve --host=0.0.0.0 --port=8000"
+
+  # ─────────────────────────── QUEUE WORKER (desligado) ──────────────────
+  # Reative quando configurar Redis ou queue=database.
+  # queue:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: cp_queue
+  #   restart: unless-stopped
+  #   working_dir: /var/www/html
+  #   volumes:
+  #     - ./backend:/var/www/html
+  #   depends_on:
+  #     - backend
+  #     - redis
+  #   environment:
+  #     DB_HOST: mysql
+  #     REDIS_HOST: redis
+  #   networks:
+  #     - cp_network
+  #   command: php artisan queue:work --tries=3 --backoff=10 --sleep=2
+
+  # ──────────────────────────── SCHEDULER (desligado) ─────────────────────
+  # Reative quando criar jobs agendados (alertas de SLA, etc.).
+  # scheduler:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: cp_scheduler
+  #   restart: unless-stopped
+  #   working_dir: /var/www/html
+  #   volumes:
+  #     - ./backend:/var/www/html
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     DB_HOST: mysql
+  #     REDIS_HOST: redis
+  #   networks:
+  #     - cp_network
+  #   command: php artisan schedule:work
+
+  # ──────────────────────────── FRONTEND ──────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cp_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+    networks:
+      - cp_network
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  cp_network:
+    driver: bridge

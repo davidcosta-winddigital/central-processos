@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Bash(curl -s -o /dev/null -w \"health: %{http_code}\\\\n\" http://localhost:8000/api/health)",
+      "Bash(curl -s http://localhost:8000/api/health)",
+      "Bash(curl -s -o /dev/null -w \"setores: %{http_code}\\\\n\" http://localhost:8000/api/setores)",
+      "Bash(curl -s -o /tmp/setores.json -w \"%{http_code}\\\\n\" http://localhost:8000/api/setores)",
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:8000/api/setores)",
+      "Bash(curl -s http://localhost:8000/api/setores/1)",
+      "Bash(curl -sv http://localhost:8000/api/setores/1)",
+      "Bash(curl -s http://localhost:8000/api/setores/1/campos)",
+      "Bash(curl -s http://localhost:8000/api/setores/1/processos)",
+      "Bash(curl -s http://localhost:8000/api/processos/1)",
+      "Bash(curl -s -X PATCH http://localhost:8000/api/etapas/1/concluir)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(docker exec *)",
+      "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@cp.local\",\"password\":\"admin123\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(grep -n \"AuthService\\\\|App\\\\\\\\\\\\\\\\Providers\" /c/Projetos/central-processos/backend/config/app.php)",
+      "Bash(grep -n \"use Illuminate\\\\\\\\\\\\\\\\Support\\\\\\\\\\\\\\\\Facades\\\\\\\\\\\\\\\\DB\" /c/Projetos/central-processos/backend/app/Http/Controllers/Api/CampoPersonalizadoController.php)",
+      "Bash(php -l /c/Projetos/central-processos/backend/app/Http/Controllers/Api/ProcessoController.php)",
+      "Bash(php -l /c/Projetos/central-processos/backend/app/Services/ValidadorCampos.php)",
+      "Bash(php -l /c/Projetos/central-processos/backend/app/Http/Controllers/Api/CampoPersonalizadoController.php)"
+    ]
+  }
+}
