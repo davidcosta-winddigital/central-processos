@@ -13,7 +13,7 @@ class CampoPersonalizadoController extends Controller
 {
     public function index(Request $request, Setor $setor): JsonResponse
     {
-        return response()->json($setor->campos()->whereNull('template_id')->orderBy('ordem')->get());
+        return response()->json($setor->campos()->orderBy('ordem')->get());
     }
 
     public function store(Request $request, Setor $setor): JsonResponse
@@ -59,7 +59,7 @@ class CampoPersonalizadoController extends Controller
                 'regex:/^[a-zA-Z][a-zA-Z0-9_]*$/',
                 Rule::unique('campos_personalizados', 'nome')
                     ->where(function ($q) use ($setorId) {
-                        $q->where('setor_id', $setorId)->whereNull('template_id');
+                        $q->where('setor_id', $setorId);
                     })
                     ->ignore($campoId),
             ],
@@ -86,9 +86,6 @@ class CampoPersonalizadoController extends Controller
         if (! in_array($data['tipo'] ?? null, $tiposComOpcoes, true)) {
             $data['opcoes'] = null;
         }
-
-        // Garante que template_id seja null (templates removidos do produto).
-        $data['template_id'] = null;
 
         return $data;
     }

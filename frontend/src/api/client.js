@@ -93,6 +93,13 @@ export const auth = {
     cacheClear();
     return r.data;
   }),
+  // Etapa 1 do cadastro: valida domínio e envia o código por e-mail.
+  register:       data => api.post('/auth/register', data).then(r => r.data),
+  // Etapa 2: valida o código e cria a conta (retorna token + user).
+  registerVerify: data => api.post('/auth/register/verify', data).then(r => {
+    cacheClear();
+    return r.data;
+  }),
   me:     ()   => cachedGet('/auth/me'),
   logout: ()   => api.post('/auth/logout').then(r => {
     cacheClear();

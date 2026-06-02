@@ -45,13 +45,18 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const login = useCallback(async (email, password) => {
-    const data = await authApi.login({ email, password });
+  // Salva token + user e ativa a sessão (usado por login e pós-cadastro).
+  const aplicarSessao = useCallback(data => {
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
   }, []);
+
+  const login = useCallback(async (email, password) => {
+    const data = await authApi.login({ email, password });
+    return aplicarSessao(data);
+  }, [aplicarSessao]);
 
   const logout = useCallback(async () => {
     try { await authApi.logout(); } catch {}
@@ -112,7 +117,7 @@ export function AuthProvider({ children }) {
 
   return (
     <Ctx.Provider value={{
-      user, loading, login, logout, isAdmin, refreshUser,
+      user, loading, login, logout, aplicarSessao, isAdmin, refreshUser,
       canAccessSetor, papelEm, papelTemNivel, can,
     }}>
       {children}

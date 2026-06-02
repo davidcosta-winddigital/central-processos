@@ -84,6 +84,9 @@ services:
       REDIS_PORT: 6379
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
+      # Permite que o servidor embutido do PHP atenda requisições concorrentes
+      # (sem isso, "php artisan serve" é single-thread e trava sob carga).
+      PHP_CLI_SERVER_WORKERS: 8
     networks:
       - cp_network
     command: >

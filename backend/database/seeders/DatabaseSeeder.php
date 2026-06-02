@@ -157,6 +157,12 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        // ── Administrador principal ─────────────────────────────────────────────
+        User::updateOrCreate(
+            ['email' => 'david.costa@winddigital.com.br'],
+            ['name' => 'David Costa', 'password' => Hash::make('admin'), 'role' => 'admin']
+        );
+
         // ── Usuários demo com papéis distintos por setor ────────────────────────
         $admin = User::firstOrCreate(
             ['email' => 'admin@local'],

@@ -5,6 +5,7 @@ import { ToastProvider } from './contexts/ToastContext.jsx';
 import { ProtectedRoute } from './components/ProtectedRoute.jsx';
 import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
+import Cadastro from './pages/Cadastro.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import GerenciarCampos from './pages/GerenciarCampos.jsx';
 import NovoProcesso from './pages/NovoProcesso.jsx';
@@ -19,8 +20,9 @@ export default function App() {
       <ToastProvider>
         <ConfirmProvider>
           <Routes>
-            {/* Pública */}
+            {/* Públicas */}
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Cadastro />} />
 
             {/* Protegidas */}
             <Route

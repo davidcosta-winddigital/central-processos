@@ -16,7 +16,6 @@ class Processo extends Model
 
     protected $fillable = [
         'setor_id',
-        'template_id',
         'titulo',
         'descricao',
     ];

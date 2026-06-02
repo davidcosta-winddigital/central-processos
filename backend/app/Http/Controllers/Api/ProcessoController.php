@@ -160,7 +160,7 @@ class ProcessoController extends Controller
 
     private function validarValoresObrigatorios(Setor $setor, array $valores): void
     {
-        $campos = $setor->campos()->whereNull('template_id')->get();
+        $campos = $setor->campos()->get();
 
         $valoresPorId = [];
         foreach ($valores as $item) {
@@ -180,7 +180,6 @@ class ProcessoController extends Controller
     private function sincronizarValores(Processo $processo, array $valores): void
     {
         $camposValidos = CampoPersonalizado::where('setor_id', $processo->setor_id)
-            ->whereNull('template_id')
             ->pluck('id')
             ->all();
 

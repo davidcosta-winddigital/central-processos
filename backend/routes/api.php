@@ -17,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 // ── Públicas ──────────────────────────────────────────────────────────────────
 Route::post('/auth/login', [AuthController::class, 'login']);
 
+// Cadastro de conta com verificação por código de e-mail (2 etapas)
+Route::post('/auth/register',        [AuthController::class, 'register'])->middleware('throttle:6,1');
+Route::post('/auth/register/verify', [AuthController::class, 'registerVerify'])->middleware('throttle:10,1');
+
 // ── Autenticadas ──────────────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
