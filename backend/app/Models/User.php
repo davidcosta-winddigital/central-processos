@@ -43,6 +43,16 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    /**
+     * Acesso ao dashboard de infraestrutura: precisa ser admin E membro
+     * do setor de Tecnologia (da Informação).
+     */
+    public function temAcessoInfra(): bool
+    {
+        return $this->isAdmin()
+            && $this->setores()->where('nome', 'like', '%Tecnologia%')->exists();
+    }
+
     public function hasSetorAccess(Setor $setor): bool
     {
         if ($this->isAdmin()) {

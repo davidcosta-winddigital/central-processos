@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Setor;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -9,7 +10,8 @@ use Illuminate\Support\Facades\Hash;
 class AdminUserSeeder extends Seeder
 {
     /**
-     * Cria/atualiza o administrador principal.
+     * Cria/atualiza o administrador principal e o vincula ao setor de Tecnologia
+     * (necessário para acessar o dashboard de Infraestrutura).
      * Rode com: php artisan db:seed --class=AdminUserSeeder
      */
     public function run(): void
@@ -19,6 +21,11 @@ class AdminUserSeeder extends Seeder
             ['name' => 'David Costa', 'password' => Hash::make('admin'), 'role' => 'admin']
         );
 
-        $this->command?->info("Admin pronto: {$user->email} (id {$user->id}, role {$user->role})");
+        $ti = Setor::where('nome', 'like', '%Tecnologia%')->first();
+        if ($ti) {
+            $user->setores()->syncWithoutDetaching([$ti->id => ['papel' => 'admin']]);
+        }
+
+        $this->command?->info("Admin pronto: {$user->email} (id {$user->id}) — setor TI: " . ($ti?->nome ?? 'não encontrado'));
     }
 }

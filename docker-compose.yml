@@ -95,6 +95,53 @@ services:
              php artisan storage:link --force 2>/dev/null || true &&
              php artisan serve --host=0.0.0.0 --port=8000"
 
+  # ─────────────────────────── REVERB (WebSockets) ───────────────────────
+  reverb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cp_reverb
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "${REVERB_PORT:-8080}:8080"
+    depends_on:
+      - backend
+    environment:
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-central_processos}
+      DB_USERNAME: ${DB_USERNAME:-laravel}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+    networks:
+      - cp_network
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+
+  # ─────────────────────── SIMULADOR DE MÉTRICAS ─────────────────────────
+  simulator:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cp_simulator
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+      reverb:
+        condition: service_started
+    environment:
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-central_processos}
+      DB_USERNAME: ${DB_USERNAME:-laravel}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+    networks:
+      - cp_network
+    command: php artisan infra:simular --intervalo=3
+
   # ─────────────────────────── QUEUE WORKER (desligado) ──────────────────
   # Reative quando configurar Redis ou queue=database.
   # queue:

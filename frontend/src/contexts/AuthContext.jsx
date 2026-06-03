@@ -75,6 +75,11 @@ export function AuthProvider({ children }) {
 
   const isAdmin = user?.role === 'admin' || user?.is_admin;
 
+  // Acesso ao dashboard de Infraestrutura: admin E membro do setor de Tecnologia.
+  const podeInfra = isAdmin && (user?.setores ?? []).some(
+    s => /tecnologia/i.test(s?.nome ?? ''),
+  );
+
   const papelEm = useCallback(setorId => {
     if (!user) return null;
     if (isAdmin) return 'admin';
@@ -117,7 +122,7 @@ export function AuthProvider({ children }) {
 
   return (
     <Ctx.Provider value={{
-      user, loading, login, logout, aplicarSessao, isAdmin, refreshUser,
+      user, loading, login, logout, aplicarSessao, isAdmin, podeInfra, refreshUser,
       canAccessSetor, papelEm, papelTemNivel, can,
     }}>
       {children}

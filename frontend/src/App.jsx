@@ -7,6 +7,8 @@ import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
 import Cadastro from './pages/Cadastro.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Infraestrutura from './pages/Infraestrutura.jsx';
+import ServidorDetalhe from './pages/ServidorDetalhe.jsx';
 import GerenciarCampos from './pages/GerenciarCampos.jsx';
 import NovoProcesso from './pages/NovoProcesso.jsx';
 import Perfil from './pages/Perfil.jsx';
@@ -32,6 +34,22 @@ export default function App() {
                   <Layout>
                     <Routes>
                       <Route path="/" element={<Dashboard />} />
+                      <Route
+                        path="/infra"
+                        element={
+                          <ProtectedRoute infraOnly>
+                            <Infraestrutura />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/infra/servidores/:id"
+                        element={
+                          <ProtectedRoute infraOnly>
+                            <ServidorDetalhe />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route path="/perfil" element={<Perfil />} />
                       <Route path="/setores/:setorId" element={<SetorDetalhe />} />
                       <Route path="/setores/:setorId/campos" element={<GerenciarCampos />} />

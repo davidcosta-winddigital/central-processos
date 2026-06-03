@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { COMM } from '../comunicacao.js';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Endpoint da API conforme o ambiente (local x produção) — ver comunicacao.js
+const baseURL = import.meta.env.VITE_API_URL || COMM.apiUrl;
 
 // ── Cache em memória para GETs (TTL de 30 segundos) ──────────────────────────
 const cache = new Map(); // key -> { data, expiresAt }
@@ -105,6 +107,23 @@ export const auth = {
     cacheClear();
     return r.data;
   }),
+};
+
+export const infra = {
+  // Carga inicial do dashboard (sem cache — os dados mudam a cada segundo).
+  metricas: () => api.get('/infra/metricas').then(r => r.data),
+  // CRUD de servidores
+  listar:         ()        => api.get('/infra/servidores').then(r => r.data),
+  criar:          data      => api.post('/infra/servidores', data).then(r => r.data),
+  atualizar:      (id, data)=> api.put(`/infra/servidores/${id}`, data).then(r => r.data),
+  remover:        id        => api.delete(`/infra/servidores/${id}`).then(r => r),
+  regenerarToken: id        => api.post(`/infra/servidores/${id}/token`).then(r => r.data),
+  servidor:       id        => api.get(`/infra/servidores/${id}`).then(r => r.data),
+  observacoes: {
+    listar:  sid          => api.get(`/infra/servidores/${sid}/observacoes`).then(r => r.data),
+    criar:   (sid, texto) => api.post(`/infra/servidores/${sid}/observacoes`, { texto }).then(r => r.data),
+    remover: id           => api.delete(`/infra/observacoes/${id}`).then(r => r),
+  },
 };
 
 export const users = {

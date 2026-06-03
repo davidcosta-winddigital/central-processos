@@ -8,6 +8,7 @@ import { useToast } from '../contexts/ToastContext.jsx';
 function Icon({ name }) {
   const map = {
     dashboard: 'M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z',
+    infra: 'M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01',
     setores: 'M3 7h18M3 12h18M3 17h18',
     usuarios: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
     perfil: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
@@ -65,7 +66,7 @@ function SectionTitle({ children }) {
 }
 
 export default function Layout({ children }) {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, podeInfra, logout } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -117,6 +118,7 @@ export default function Layout({ children }) {
         {/* Navegação */}
         <nav className="flex-1 overflow-y-auto py-2">
           <SectionTitle>Navegação</SectionTitle>
+          {podeInfra && <NavItem to="/infra" icon="infra" label="Infraestrutura" />}
           <NavItem to="/" end icon="dashboard" label="Dashboard" />
           <NavItem to="/perfil" icon="perfil" label="Meu perfil" />
           {isAdmin && <NavItem to="/admin/usuarios" icon="usuarios" label="Usuários" />}

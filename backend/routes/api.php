@@ -6,9 +6,12 @@ use App\Http\Controllers\Api\CampoPersonalizadoController;
 use App\Http\Controllers\Api\EtapaAnexoController;
 use App\Http\Controllers\Api\PerfilController;
 use App\Http\Controllers\Api\EtapaController;
+use App\Http\Controllers\Api\InfraController;
 use App\Http\Controllers\Api\ProcessoAnexoController;
 use App\Http\Controllers\Api\ProcessoCampoController;
 use App\Http\Controllers\Api\ProcessoController;
+use App\Http\Controllers\Api\ServidorController;
+use App\Http\Controllers\Api\ServidorObservacaoController;
 use App\Http\Controllers\Api\SetorController;
 use App\Http\Controllers\Api\SetorMetricasController;
 use App\Http\Controllers\Api\UserController;
@@ -20,6 +23,11 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 // Cadastro de conta com verificação por código de e-mail (2 etapas)
 Route::post('/auth/register',        [AuthController::class, 'register'])->middleware('throttle:6,1');
 Route::post('/auth/register/verify', [AuthController::class, 'registerVerify'])->middleware('throttle:10,1');
+
+// Ingestão de métricas dos agentes (autenticada pelo token do servidor).
+Route::post('/infra/ingest', [InfraController::class, 'ingest'])->middleware('throttle:240,1');
+// Download do script do agente (genérico, sem segredo embutido).
+Route::get('/infra/agente/{plataforma}', [InfraController::class, 'agente']);
 
 // ── Autenticadas ──────────────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
@@ -38,6 +46,19 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/health', function () {
         return response()->json(['status' => 'ok']);
+    });
+
+    // Dashboard de Infraestrutura — só admin membro do setor de Tecnologia.
+    Route::middleware('infra')->prefix('infra')->group(function () {
+        Route::get('metricas', [InfraController::class, 'metricas']);
+        Route::apiResource('servidores', ServidorController::class)
+            ->parameters(['servidores' => 'servidor']);
+        Route::post('servidores/{servidor}/token', [ServidorController::class, 'regenerarToken']);
+
+        // Observações por servidor
+        Route::get('servidores/{servidor}/observacoes',  [ServidorObservacaoController::class, 'index']);
+        Route::post('servidores/{servidor}/observacoes', [ServidorObservacaoController::class, 'store']);
+        Route::delete('observacoes/{observacao}',        [ServidorObservacaoController::class, 'destroy']);
     });
 
     // Setores

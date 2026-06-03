@@ -34,7 +34,22 @@
       "Bash(tee /tmp/login.json)",
       "Bash(curl -s -m 15 -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"email\":\"admin@local\",\"password\":\"admin123\"}')",
       "Bash(curl -s -m 10 -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/api/health)",
-      "Bash(curl -s -m 20 -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"email\":\"admin@local\",\"password\":\"admin123\"}')"
+      "Bash(curl -s -m 20 -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"email\":\"admin@local\",\"password\":\"admin123\"}')",
+      "Bash(python -c ' *)",
+      "Bash(curl -s -m 10 -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:5173/infra)",
+      "Bash(rm -f backend/app/Services/SimuladorMetricas.php)",
+      "Bash(grep -rn \"SimuladorMetricas\" backend/app backend/routes)",
+      "Bash(curl -s -m 10 -o /dev/null -w \"HTTP %{http_code} bytes=%{size_download}\\\\n\" http://localhost:8000/api/infra/agente/linux)",
+      "Bash(curl -s -m 10 -o /dev/null -w \"HTTP %{http_code} bytes=%{size_download}\\\\n\" http://localhost:8000/api/infra/agente/windows)",
+      "Bash(curl -s -m 10 -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/api/infra/agente/mac)",
+      "Bash(curl -s -m 10 http://localhost:8000/api/infra/agente/linux)",
+      "Bash(curl -s -m 10 -o /dev/null -w \"HTTP %{http_code} bytes=%{size_download}\\\\n\" http://localhost:8000/api/infra/agente/freebsd)",
+      "Bash(curl -s -m 10 http://localhost:8000/api/infra/agente/freebsd)",
+      "Bash(curl -s -m 10 -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:5173/infra/servidores/9)",
+      "Bash(cp docker/agents/agente-freebsd.sh backend/resources/agentes/freebsd.sh)",
+      "Bash(cp docker/agents/agente-linux.sh backend/resources/agentes/linux.sh)",
+      "Bash(cp docker/agents/agente-windows.ps1 backend/resources/agentes/windows.ps1)",
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('servidores:',len\\(d['servidores']\\),'| nomes:',[s['nome'] for s in d['servidores']]\\)\")"
     ]
   }
 }

@@ -33,5 +33,6 @@ class Kernel extends HttpKernel
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'isAdmin'  => \App\Http\Middleware\IsAdmin::class,
+        'infra'    => \App\Http\Middleware\InfraAccess::class,
     ];
 }
